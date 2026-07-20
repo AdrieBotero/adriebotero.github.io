@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Name — Frontend Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14171c;
+    --surface: #1b1f26;
+    --surface-2: #21262e;
+    --line: #2c323c;
+    --text: #e9ecef;
+    --text-dim: #8b94a1;
+    --amber: #f4a623;
+    --amber-dim: #a8791f;
+    --scan: #4fd1a5;
+    --radius: 3px;
+    --mono: 'IBM Plex Mono', monospace;
+    --display: 'Space Grotesk', sans-serif;
+    --body: 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  ::selection { background: var(--amber); color: #14171c; }
+
+  :focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+  }
+
+  /* ambient scanline texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 999;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.012) 0px,
+      rgba(255,255,255,0.012) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    opacity: 0.5;
+  }
+
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 32px; }
+
+  /* ---------- NAV ---------- */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(20,23,28,0.85);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+  .nav-status {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--scan);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.05em;
+  }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--scan);
+    box-shadow: 0 0 6px var(--scan);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .nav-links { display: flex; gap: 28px; font-family: var(--mono); font-size: 13px; }
+  .nav-links a { color: var(--text-dim); transition: color 0.15s; }
+  .nav-links a:hover { color: var(--amber); }
+
+  /* ---------- HERO ---------- */
+  header.hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 60px;
+    position: relative;
+  }
+  .boot-log {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-bottom: 28px;
+    min-height: 90px;
+  }
+  .boot-log div { opacity: 0; animation: appear 0.35s forwards; }
+  .boot-log div:nth-child(1) { animation-delay: 0.1s; }
+  .boot-log div:nth-child(2) { animation-delay: 0.4s; }
+  .boot-log div:nth-child(3) { animation-delay: 0.7s; }
+  .boot-log div:nth-child(4) { animation-delay: 1.0s; }
+  .boot-log .ok { color: var(--scan); }
+  @keyframes appear { to { opacity: 1; } }
+
+  .hero h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(42px, 7vw, 76px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    opacity: 0;
+    animation: appear 0.5s forwards 1.3s;
+  }
+  .hero h1 .cursor {
+    display: inline-block;
+    width: 0.5ch;
+    background: var(--amber);
+    animation: blink 1s step-end infinite;
+    margin-left: 4px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .hero .role {
+    font-family: var(--mono);
+    color: var(--amber);
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    margin-top: 14px;
+    opacity: 0;
+    animation: appear 0.5s forwards 1.6s;
+  }
+  .hero .lede {
+    max-width: 560px;
+    color: var(--text-dim);
+    margin-top: 20px;
+    font-size: 16px;
+    opacity: 0;
+    animation: appear 0.5s forwards 1.9s;
+  }
+  .hero .actions {
+    margin-top: 34px;
+    display: flex;
+    gap: 14px;
+    opacity: 0;
+    animation: appear 0.5s forwards 2.1s;
+  }
+  .btn {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    transition: border-color 0.15s, transform 0.15s;
+    display: inline-block;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.primary { background: var(--amber); color: #14171c; border-color: var(--amber); font-weight: 600; }
+  .btn.primary:hover { background: #ffb845; }
+  .btn.ghost { color: var(--text); }
+  .btn.ghost:hover { border-color: var(--amber); }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 36px; left: 32px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .scroll-cue .bar {
+    width: 1px; height: 24px;
+    background: linear-gradient(var(--amber), transparent);
+    animation: drop 1.6s ease-in-out infinite;
+  }
+  @keyframes drop { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+  /* ---------- SECTION SHARED ---------- */
+  section { padding: 110px 0; border-top: 1px solid var(--line); }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--amber);
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+  }
+  h2.section-title {
+    font-family: var(--display);
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 600;
+    margin-bottom: 44px;
+    max-width: 600px;
+  }
+
+  /* ---------- ABOUT / STATS ---------- */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+  .about-grid p { color: var(--text-dim); margin-bottom: 16px; font-size: 15.5px; }
+  .about-grid p strong { color: var(--text); font-weight: 600; }
+
+  .stat-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 4px;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 16px 18px;
+    border-bottom: 1px dashed var(--line);
+    font-family: var(--mono);
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .label { font-size: 12px; color: var(--text-dim); letter-spacing: 0.04em; }
+  .stat-row .value { font-size: 15px; color: var(--amber); font-weight: 600; }
+
+  /* ---------- PROJECTS AS RECEIPT ---------- */
+  .receipt {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .receipt-head {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    padding: 16px 22px;
+    border-bottom: 1px dashed var(--line);
+    display: flex;
+    justify-content: space-between;
+  }
+  .project-item {
+    padding: 28px 22px;
+    border-bottom: 1px dashed var(--line);
+    transition: background 0.2s;
+  }
+  .project-item:last-child { border-bottom: none; }
+  .project-item:hover { background: var(--surface-2); }
+
+  .project-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .project-name {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .project-name .idx { color: var(--amber-dim); font-family: var(--mono); font-size: 13px; margin-right: 10px; font-weight: 400; }
+  .project-status {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--scan);
+    border: 1px solid rgba(79,209,165,0.3);
+    padding: 3px 8px;
+    border-radius: var(--radius);
+    white-space: nowrap;
+  }
+  .project-desc {
+    color: var(--text-dim);
+    font-size: 14.5px;
+    margin-top: 10px;
+    max-width: 620px;
+  }
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .project-tags span {
+    color: var(--text-dim);
+    border: 1px solid var(--line);
+    padding: 4px 9px;
+    border-radius: var(--radius);
+  }
+  .project-links {
+    margin-top: 16px;
+    display: flex;
+    gap: 18px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .project-links a { color: var(--amber); border-bottom: 1px solid transparent; }
+  .project-links a:hover { border-color: var(--amber); }
+
+  .receipt-foot {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 16px 22px;
+    text-align: center;
+  }
+
+  /* ---------- SKILLS ---------- */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .skill-cell {
+    background: var(--surface);
+    padding: 20px;
+  }
+  .skill-cell .cat {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--amber);
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .skill-cell ul { list-style: none; font-size: 14px; color: var(--text-dim); }
+  .skill-cell li { padding: 3px 0; }
+
+  /* ---------- CONTACT ---------- */
+  .contact-block {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 48px;
+    text-align: center;
+  }
+  .contact-block .prompt {
+    font-family: var(--mono);
+    color: var(--scan);
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+  .contact-block h2 {
+    font-family: var(--display);
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .contact-links {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  footer {
+    padding: 32px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 720px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    section { padding: 72px 0; }
+    .wrap { padding: 0 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    .boot-log div, .hero h1, .hero .role, .hero .lede, .hero .actions { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="nav-status"><span class="dot"></span>AVAILABLE FOR WORK · LOS ANGELES, CA</div>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#projects">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="boot-log">
+      <div>&gt; initializing session...</div>
+      <div>&gt; loading profile <span class="ok">[OK]</span></div>
+      <div>&gt; ten years frontend, transaction-critical systems <span class="ok">[OK]</span></div>
+      <div>&gt; ready.</div>
+    </div>
+    <h1>Your Name<span class="cursor">&nbsp;</span></h1>
+    <div class="role">FRONTEND ENGINEER — REACT / TYPESCRIPT / DESIGN SYSTEMS</div>
+    <p class="lede">I build interfaces that can't afford to fail — checkout flows, POS systems, and high-scale consumer products where every millisecond and every edge case counts.</p>
+    <div class="actions">
+      <a class="btn primary" href="#projects">View projects</a>
+      <a class="btn ghost" href="#contact">Get in touch</a>
+    </div>
+  </div>
+  <div class="scroll-cue"><div class="bar"></div>SCROLL</div>
+</header>
+
+<section id="about">
+  <div class="wrap">
+    <div class="eyebrow">01 / ABOUT</div>
+    <h2 class="section-title">Built for systems where downtime isn't an option</h2>
+    <div class="about-grid">
+      <div>
+        <p>I'm a frontend engineer with <strong>10 years of experience</strong> building consumer-facing interfaces at scale — most recently on transaction-critical systems including self-checkout, point-of-sale, and web POS platforms.</p>
+        <p>My work sits at the intersection of <strong>reliability and usability</strong>: feature-flag-driven rollouts, high-traffic consumer flows, and interfaces that have to work correctly the first time, every time. I care about the details that make a system feel invisible when it's working — and recoverable when it isn't.</p>
+        <p>Outside of shipping product, I spend time mentoring engineers and refining how teams ship UI safely at scale.</p>
+      </div>
+      <div class="stat-panel">
+        <div class="stat-row"><span class="label">YEARS EXPERIENCE</span><span class="value">10</span></div>
+        <div class="stat-row"><span class="label">CORE STACK</span><span class="value">REACT / REDUX / TS</span></div>
+        <div class="stat-row"><span class="label">DOMAIN</span><span class="value">POS / CHECKOUT</span></div>
+        <div class="stat-row"><span class="label">LOCATION</span><span class="value">LOS ANGELES, CA</span></div>
+        <div class="stat-row"><span class="label">STATUS</span><span class="value" style="color:var(--scan)">OPEN TO WORK</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="wrap">
+    <div class="eyebrow">02 / PROJECTS</div>
+    <h2 class="section-title">Selected work</h2>
+
+    <div class="receipt">
+      <div class="receipt-head"><span>PROJECT LOG</span><span>QTY: 3</span></div>
+
+      <div class="project-item">
+        <div class="project-top">
+          <div class="project-name"><span class="idx">001</span>Project Name One</div>
+          <div class="project-status">LIVE</div>
+        </div>
+        <p class="project-desc">One or two sentences on what this project does, who it's for, and the specific problem it solves. Lead with the outcome, not the tech.</p>
+        <div class="project-tags"><span>React</span><span>TypeScript</span><span>Redux</span></div>
+        <div class="project-links"><a href="#">View project →</a><a href="#">Source →</a></div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-top">
+          <div class="project-name"><span class="idx">002</span>Project Name Two</div>
+          <div class="project-status">LIVE</div>
+        </div>
+        <p class="project-desc">One or two sentences on what this project does, who it's for, and the specific problem it solves. Lead with the outcome, not the tech.</p>
+        <div class="project-tags"><span>Next.js</span><span>Node</span><span>PostgreSQL</span></div>
+        <div class="project-links"><a href="#">View project →</a><a href="#">Source →</a></div>
+      </div>
+
+      <div class="project-item">
+        <div class="project-top">
+          <div class="project-name"><span class="idx">003</span>Project Name Three</div>
+          <div class="project-status" style="color:var(--amber); border-color: rgba(244,166,35,0.3);">IN PROGRESS</div>
+        </div>
+        <p class="project-desc">One or two sentences on what this project does, who it's for, and the specific problem it solves. Lead with the outcome, not the tech.</p>
+        <div class="project-tags"><span>React Native</span><span>GraphQL</span></div>
+        <div class="project-links"><a href="#">View project →</a><a href="#">Source →</a></div>
+      </div>
+
+      <div class="receipt-foot">— END OF LOG — add more .project-item blocks to extend —</div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <div class="eyebrow">03 / SKILLS</div>
+    <h2 class="section-title">Toolkit</h2>
+    <div class="skills-grid">
+      <div class="skill-cell">
+        <div class="cat">LANGUAGES</div>
+        <ul><li>TypeScript</li><li>JavaScript (ES6+)</li><li>HTML / CSS</li></ul>
+      </div>
+      <div class="skill-cell">
+        <div class="cat">FRAMEWORKS</div>
+        <ul><li>React</li><li>Redux</li><li>Next.js</li></ul>
+      </div>
+      <div class="skill-cell">
+        <div class="cat">SYSTEMS</div>
+        <ul><li>Feature flagging</li><li>A/B experimentation</li><li>Design systems</li></ul>
+      </div>
+      <div class="skill-cell">
+        <div class="cat">PRACTICES</div>
+        <ul><li>Code review</li><li>Mentoring</li><li>High-scale UI</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="eyebrow">04 / CONTACT</div>
+    <div class="contact-block">
+      <div class="prompt">&gt; open_channel --recipient=you</div>
+      <h2>Let's build something reliable.</h2>
+      <div class="contact-links">
+        <a class="btn primary" href="mailto:you@example.com">Email me</a>
+        <a class="btn ghost" href="#">LinkedIn</a>
+        <a class="btn ghost" href="#">GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>© 2026 Your Name — built with care, shipped without downtime.</footer>
+
+</body>
+</html>
